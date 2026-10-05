@@ -1,0 +1,11 @@
+{
+  "installCommand": "cd \"Ai Studio\" && npm install",
+  "buildCommand": "cd \"Ai Studio\" && npm run build",
+  "outputDirectory": "Ai Studio/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

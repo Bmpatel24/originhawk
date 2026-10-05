@@ -1,0 +1,13 @@
+{
+  "name": "origin-hawk-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "Ai Studio"
+  ],
+  "scripts": {
+    "build": "npm --prefix \"Ai Studio\" run build",
+    "dev": "npm --prefix \"Ai Studio\" run dev",
+    "start": "npm --prefix \"Ai Studio\" run start"
+  }
+}
