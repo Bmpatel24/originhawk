@@ -1,13 +1,11 @@
 {
-  "name": "origin-hawk-workspace",
+  "name": "origin-hawk",
   "private": true,
   "version": "1.0.0",
-  "workspaces": [
-    "Ai Studio"
-  ],
+  "description": "Origin Hawk Official Website",
   "scripts": {
-    "build": "npm --prefix \"Ai Studio\" run build",
-    "dev": "npm --prefix \"Ai Studio\" run dev",
-    "start": "npm --prefix \"Ai Studio\" run start"
+    "build": "echo \"Static CDN site: no build required\"",
+    "dev": "node server.js",
+    "start": "node server.js"
   }
 }

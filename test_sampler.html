@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Frame Sampler</h1>
+  <video id="vid" crossorigin="anonymous" muted playsinline></video>
+  <canvas id="cvs"></canvas>
+  <div id="status">Starting...</div>
+
+  <script>
+    function getBrightness(ctx, width, height) {
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+      let total = 0;
+      let nonBlackCount = 0;
+      const step = 4 * 10; // sample every 10th pixel
+      let samples = 0;
+      for (let i = 0; i < data.length; i += step) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        const lum = 0.299*r + 0.587*g + 0.114*b;
+        total += lum;
+        if (lum > 20) nonBlackCount++;
+        samples++;
+      }
+      return { avg: Math.round(total / samples), nonBlackRatio: Math.round((nonBlackCount / samples) * 100) };
+    }
+
+    async function inspectVideo(videoSrc, videoLabel) {
+      const vid = document.getElementById('vid');
+      const cvs = document.getElementById('cvs');
+      const ctx = cvs.getContext('2d');
+
+      return new Promise((resolve) => {
+        vid.src = videoSrc;
+        vid.load();
+
+        vid.onloadedmetadata = async () => {
+          cvs.width = vid.videoWidth || 1280;
+          cvs.height = vid.videoHeight || 720;
+          const dur = vid.duration;
+          console.log(videoLabel, 'Duration:', dur, 'Resolution:', cvs.width, 'x', cvs.height);
+
+          // Test times: 2s, 4s, 6s, 8s, 10s, 12s (or fractions of duration)
+          const timeCandidates = [];
+          for (let f = 0.15; f <= 0.85; f += 0.15) {
+            timeCandidates.push(Math.round(dur * f * 10) / 10);
+          }
+
+          for (let i = 0; i < timeCandidates.length; i++) {
+            const t = timeCandidates[i];
+            await new Promise(resSeek => {
+              vid.currentTime = t;
+              vid.onseeked = async () => {
+                ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
+                const info = getBrightness(ctx, cvs.width, cvs.height);
+                const dataUrl = cvs.toDataURL('image/jpeg', 0.9);
+                const frameName = videoLabel + '_time_' + t.toFixed(1) + 's_bri_' + info.avg + '.jpg';
+                
+                await fetch('/save_frame', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    name: frameName,
+                    image: dataUrl,
+                    brightness: info.avg,
+                    time: t
+                  })
+                });
+                resSeek();
+              };
+            });
+          }
+          resolve();
+        };
+
+        vid.onerror = (e) => {
+          console.error('Vid error', e);
+          resolve();
+        };
+      });
+    }
+
+    async function run() {
+      try {
+        await inspectVideo('/assets/Hero%20section/1.mp4', 'vid1');
+        await inspectVideo('/assets/Hero%20section/2.mp4', 'vid2');
+        await inspectVideo('/assets/Hero%20section/3.mp4', 'vid3');
+        document.getElementById('status').innerText = 'ALL_DONE';
+      } catch (e) {
+        document.getElementById('status').innerText = 'ERROR ' + e.message;
+      }
+    }
+
+    window.onload = run;
+  </script>
+</body>
+</html>
