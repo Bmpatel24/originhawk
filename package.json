@@ -1,0 +1,11 @@
+{
+  "name": "origin-hawk",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Origin Hawk Official Website",
+  "scripts": {
+    "build": "echo \"Static CDN site: no build required\"",
+    "dev": "node server.js",
+    "start": "node server.js"
+  }
+}
